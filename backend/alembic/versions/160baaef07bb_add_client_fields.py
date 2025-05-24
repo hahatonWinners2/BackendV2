@@ -1,8 +1,8 @@
-"""Added tables
+"""add client fields
 
-Revision ID: 49f028631dd3
+Revision ID: 160baaef07bb
 Revises: 
-Create Date: 2025-05-24 09:33:40.394318
+Create Date: 2025-05-24 16:54:01.418391
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '49f028631dd3'
+revision: str = '160baaef07bb'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,6 +26,9 @@ def upgrade() -> None:
     sa.Column('address', sa.String(length=255), nullable=False, comment="Client's address"),
     sa.Column('description', sa.String(length=500), nullable=True, comment='Description of the client'),
     sa.Column('suspicion', sa.Integer(), nullable=False, comment='Suspicion level (0-100%)'),
+    sa.Column('buildingType', sa.String(length=100), nullable=True, comment='Type of the building'),
+    sa.Column('roomsCount', sa.Integer(), nullable=True, comment='Number of rooms'),
+    sa.Column('residentsCount', sa.Integer(), nullable=True, comment='Number of residents'),
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_client')),
     schema='public'

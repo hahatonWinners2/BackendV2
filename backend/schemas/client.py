@@ -3,10 +3,18 @@ from datetime import date
 from uuid import UUID
 
 
+from pydantic import BaseModel, Field
+from typing import Optional
+
 class ClientCreate(BaseModel):
-    name: str = Field(..., max_length=100)
+    name: str = Field('не знаю, кто я', max_length=100)
     address: str = Field(..., max_length=255)
-    description: str | None = Field(None, max_length=500)
+    description: Optional[str] = Field('', max_length=500)
+    
+    buildingType: Optional[str] = Field('Прочий', max_length=100)
+    roomsCount: Optional[int] = Field(1, ge=0)
+    residentsCount: Optional[int] = Field(1, ge=0)
+
 
 class MonthlyConsumptionCreate(BaseModel):
     client_id: UUID

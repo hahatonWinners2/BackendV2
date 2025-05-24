@@ -6,6 +6,9 @@ from pydantic import BaseModel
 
 from utils.algorithm.processor import get_answers
 from utils.claim_generation.main import generate_pdf
+from schemas.client import ClientCreate
+
+from app.clients.router import create_client
 
 
 class CourtData(BaseModel):
@@ -40,7 +43,13 @@ async def upload_json(file: UploadFile):
     
     answers = get_answers(data)
 
-    return [{'accountId': d['accountId'], 'isCommercial': answers[i], 'address': d['address']} for i, d in enumerate(data)]
+    info = []
+
+    for i, d in enumerate(data):
+        info.append({'accountId': d['accountId'], 'isCommercial': answers[i], 'address': d['address']})
+        await create_client(ClientCreate.parse_obj(d))
+
+    return info
 
 
 @router.post("/get_claim")
