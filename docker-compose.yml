@@ -10,6 +10,14 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+    # Добавьте эти строки для обхода проблем с потоками и seccomp:
+    security_opt:
+      - seccomp:unconfined
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
 
   db:
     image: postgres:13.2
@@ -32,3 +40,11 @@ services:
         condition: service_healthy
     env_file:
       - ./backend/.env
+    # Добавьте эти строки и для alembic, если он тоже использует pip:
+    security_opt:
+      - seccomp:unconfined
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
