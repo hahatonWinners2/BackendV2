@@ -1,0 +1,34 @@
+version: '3.9'
+
+services:
+  api:
+    build: ./backend
+    expose:
+      - "80"
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13.2
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    command: [ "postgres", "-c", "log_statement=all", "-c", "log_destination=stderr" ]
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "postgres" ]
+      interval: 1s
+      retries: 20
+    env_file:
+      - ./backend/.env
+
+  alembic:
+    build: ./backend
+    entrypoint: [ "alembic" ]
+    command: [ "upgrade", "head" ]
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
