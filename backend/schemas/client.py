@@ -15,6 +15,14 @@ class ClientCreate(BaseModel):
     roomsCount: Optional[int] = Field(1, ge=0)
     residentsCount: Optional[int] = Field(1, ge=0)
 
+class TopClientResponse(BaseModel):
+    id: UUID
+    address: str
+    buildingType: Optional[str]
+    suspicion: int
+
+    class Config:
+        orm_mode = True
 
 class MonthlyConsumptionCreate(BaseModel):
     client_id: UUID

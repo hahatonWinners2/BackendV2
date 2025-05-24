@@ -1,10 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.future import select
 from datetime import date
+from sqlalchemy import desc, and_
+from typing import List, Optional
 
-from schemas.client import ClientCreate, MonthlyConsumptionCreate, MonthlyConsumptionResponse
+from schemas.client import ClientCreate, MonthlyConsumptionCreate, MonthlyConsumptionResponse, TopClientResponse
 from storage.models.client import Client
 from storage.models.consumption import MonthlyConsumption
+from storage.models.suspicious import SuspiciousClient
 from storage.postgres import async_session
 from datetime import date
 from dateutil.relativedelta import relativedelta
@@ -39,6 +42,32 @@ async def create_client(
         await db.refresh(new_client)
 
     return new_client
+
+
+@router.get("/clients/", response_model=List[TopClientResponse])
+async def get_clients(checked: Optional[bool] = Query(None, description="Filter clients by suspicious checked status")):
+    async with async_session() as db:
+        query = select(Client)
+
+        if checked is not None:
+            subq = (
+                select(SuspiciousClient.client_id)
+                .where(
+                    and_(
+                        SuspiciousClient.client_id == Client.id,
+                        SuspiciousClient.checked == checked
+                    )
+                )
+                .exists()
+            )
+            query = query.where(subq)
+
+        query = query.order_by(desc(Client.suspicion)).limit(15)
+
+        result = await db.execute(query)
+        clients = result.scalars().all()
+
+        return clients
 
 
 @router.post("/clients/{client_id}/monthly_consumption", response_model=MonthlyConsumptionCreate)
